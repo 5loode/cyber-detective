@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A beginner-friendly cybersecurity awareness game. Study the evidence and choose the safest response.">
+<title>Cyber Detective | Spot the Threat</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕵️</text></svg>">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#08162f; --panel:#0f2552; --ink:#e9f1ff; --muted:#9db6e0; --line:#24437d;
+  --accent:#4da3ff; --accent-ink:#04122b; --paper:#e6f0ff; --paper-ink:#14284d;
+  --good:#5be0a0; --good-bg:#0e3a38; --bad:#ff8fa3; --bad-bg:#3d1a35;
+}
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0;min-height:100%;background:radial-gradient(1200px 500px at 50% -10%,#14357a 0%,var(--bg) 60%) fixed,var(--bg);color:var(--ink);
+  font:16px/1.55 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;line-height:1.2;margin:0}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 40px}
+header.top{text-align:center;padding:28px 0 20px}
+header.top h1{color:#8cc4ff;font-size:clamp(2rem,6vw,3.2rem);letter-spacing:.04em}
+header.top p{color:var(--muted);margin:6px 0 0}
+.layout{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+@media(max-width:820px){.layout{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+.stack>*+*{margin-top:16px}
+.intro{text-align:center;padding:32px 20px}
+.intro p{color:var(--muted);max-width:46ch;margin:10px auto 22px}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:12px 20px;font-weight:600}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.meta{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:.9rem;margin-bottom:10px}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:16px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.evidence{background:var(--paper);color:var(--paper-ink);border:1px dashed color-mix(in srgb,var(--paper-ink) 40%,transparent);
+  border-radius:10px;padding:16px;font-size:.95rem;overflow-wrap:anywhere}
+.evidence .row{display:flex;gap:8px;flex-wrap:wrap}
+.evidence b{min-width:4.5em}
+.evidence .body{margin-top:10px;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--paper-ink) 25%,transparent)}
+.evidence .fake{text-decoration:underline;text-decoration-style:wavy}
+.tag{display:inline-block;font-size:.8rem;padding:2px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted);margin-bottom:8px}
+.options{border:0;padding:0;margin:18px 0 0}
+.options legend{font-family:Georgia,serif;font-size:1.15rem;font-weight:700;padding:0;margin-bottom:2px}
+.options .sub{color:var(--muted);margin:0 0 10px;font-size:.92rem}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:8px;cursor:pointer;background:var(--panel)}
+.opt:hover{border-color:var(--accent)}
+.opt input{margin-top:5px;accent-color:var(--accent)}
+.opt.chosen{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.opt.right{background:var(--good-bg);border-color:var(--good)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.opt.locked{cursor:default}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.hint,.feedback{margin-top:14px;border-radius:10px;padding:12px 14px}
+.hint{background:var(--paper);color:var(--paper-ink)}
+.feedback.ok{background:var(--good-bg);border-left:4px solid var(--good)}
+.feedback.no{background:var(--bad-bg);border-left:4px solid var(--bad)}
+.feedback strong{display:block;margin-bottom:2px}
+.end{text-align:center;padding:30px 20px}
+.end .big{font-family:Georgia,serif;font-size:3.4rem;font-weight:700;color:var(--accent)}
+.end .stats{display:flex;justify-content:center;gap:28px;margin:14px 0 18px;flex-wrap:wrap}
+.end .stats div span{display:block;color:var(--muted);font-size:.85rem}
+.side h3{font-size:1.05rem;margin-bottom:10px}
+.prog{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}
+.prog:last-of-type{border:0}
+.tips{list-style:none;margin:0;padding:0}
+.tips li{padding:8px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.tips li:last-child{border:0}
+.tips b{display:block}
+.tips span{color:var(--muted)}
+footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:28px}
+#timer{font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
+#timer.low{color:var(--bad);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.5}}
+.hidden{display:none!important}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Cyber Detective</h1>
+    <p>Spot the threat. Think, investigate, stay safe.</p>
+  </header>
+
+  <div class="layout">
+    <main class="stack" aria-live="polite">
+      <section id="intro" class="card intro">
+        <h2>Ready to investigate?</h2>
+        <p>You will review 5 real-world style cases. Study the evidence, pick the safest response, and learn why.</p>
+        <button class="btn" id="start">Start investigation</button>
+      </section>
+
+      <section id="game" class="card hidden">
+        <div class="meta"><span id="caseNo"></span><span id="timer" role="timer"></span><span id="caseType"></span></div>
+        <div class="bar" role="progressbar" aria-label="Investigation progress" aria-valuemin="0" aria-valuemax="5" id="bar"><i></i></div>
+        <div class="bar" id="tbar" aria-hidden="true" style="height:5px;margin-top:-8px"><i id="tfill" style="width:100%;transition:width 1s linear"></i></div>
+        <h2 id="caseTitle"></h2>
+        <div class="evidence" id="evidence" style="margin-top:12px"></div>
+        <fieldset class="options">
+          <legend>What should you do?</legend>
+          <p class="sub">Study the evidence and choose the safest response.</p>
+          <div id="opts"></div>
+        </fieldset>
+        <div id="hintBox" class="hint hidden"></div>
+        <div id="feedback" class="feedback hidden" role="status"></div>
+        <div class="actions">
+          <button class="btn ghost" id="hintBtn">Show hint</button>
+          <button class="btn" id="submit" disabled>Submit answer</button>
+          <button class="btn hidden" id="next">Next case</button>
+        </div>
+      </section>
+
+      <section id="end" class="card end hidden">
+        <h2>Case file complete</h2>
+        <div class="big" id="finalScore">0</div>
+        <div id="rank" style="color:var(--muted)"></div>
+        <div class="stats">
+          <div><b id="finalCases">0</b><span>Cases solved correctly</span></div>
+          <div><b id="finalHints">0</b><span>Hints used</span></div>
+          <div><b id="finalTime">0:00</b><span>Total time</span></div>
+        </div>
+        <button class="btn" id="again">Play again</button>
+      </section>
+    </main>
+
+    <aside class="stack side">
+      <div class="card">
+        <h3>Your progress</h3>
+        <div class="prog"><span>Cases completed</span><b id="pCases">0 / 5</b></div>
+        <div class="prog"><span>Score</span><b id="pScore">0 pts</b></div>
+        <div class="prog"><span>Total time</span><b id="pTime">0:00</b></div>
+      </div>
+      <div class="card">
+        <h3>Detective checklist</h3>
+        <ul class="tips">
+          <li><b>✉️ Check the sender</b><span>Look for look-alike or unexpected addresses.</span></li>
+          <li><b>⏱️ Notice urgency</b><span>Pressure to act fast is a warning sign.</span></li>
+          <li><b>🔗 Inspect links</b><span>Avoid unknown or unexpected links.</span></li>
+          <li><b>🔐 Protect secrets</b><span>Never share passwords or OTP codes.</span></li>
+          <li><b>📥 Check downloads</b><span>Use trusted sources only.</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>💡 Need a hint?</h3>
+        <p style="margin:0;color:var(--muted);font-size:.92rem">Check every clue before deciding. A hint halves the points for that case. You have 30 seconds per case.</p>
+      </div>
+    </aside>
+  </div>
+  <footer>Cyber Detective · Beginner-friendly cybersecurity awareness game</footer>
+</div>
+
+<script>
+const CASES = [
+  {
+    title: "The urgent bank email", type: "Email",
+    evidence: `<div class="row"><b>From:</b><span>security@<span class="fake">paypa1-support.com</span></span></div>
+      <div class="row"><b>Subject:</b><span>URGENT: Account locked in 24 hours</span></div>
+      <div class="body">Dear customer, we noticed unusual activity. Verify your identity now or your account will be closed permanently.<br><br>
+      <span class="fake">http://paypa1-verify.com/login</span></div>`,
+    hint: "Read the sender's domain one letter at a time.",
+    options: [
+      {t: "Click the link quickly so the account is not closed", ok: false, why: "Urgency is a classic pressure tactic. The link leads to a fake login page."},
+      {t: "Ignore the link, open the official app or website yourself, and report the email as phishing", ok: true, why: "Go to the real service directly. The sender domain uses a number 1 instead of the letter l."},
+      {t: "Reply and ask them to confirm they are real", ok: false, why: "Replying confirms your address is active and gives attackers a conversation to exploit."},
+      {t: "Forward it to friends as a warning, with the link included", ok: false, why: "Sharing the live link puts others at risk. Report it instead."}
+    ]
+  },
+  {
+    title: "The boss who needs a favor", type: "Text message",
+    evidence: `<div class="row"><b>From:</b><span>Unknown number (+44 7xxx xxx xxx)</span></div>
+      <div class="body">"Hi, it's your CEO. I'm in a meeting and can't talk. I need 5 gift cards for a client, urgent. Buy them and send me the codes here. Keep this between us."</div>`,
+    hint: "Would a real executive ask for secrecy and gift card codes?",
+    options: [
+      {t: "Buy the gift cards to avoid upsetting your boss", ok: false, why: "This is a well-known impersonation scam. Gift card codes cannot be recovered once sent."},
+      {t: "Text back asking for more details", ok: false, why: "Continuing the chat lets the scammer apply more pressure."},
+      {t: "Verify through a known channel, such as calling your boss on a saved number, and report the message", ok: true, why: "Always confirm unusual money requests using contact details you already trust."},
+      {t: "Send only one card to be safe", ok: false, why: "Any payment still rewards the scam."}
+    ]
+  },
+  {
+    title: "The mystery USB drive", type: "Physical",
+    evidence: `<div class="body" style="margin-top:0;border:0;padding:0">You find a USB drive in the office parking lot. It has a label that reads <b>"Salary Review 2026 - Confidential"</b>.</div>`,
+    hint: "Curiosity is exactly what the attacker is counting on.",
+    options: [
+      {t: "Plug it into your work laptop to find the owner", ok: false, why: "Malicious drives can install malware the moment they are connected."},
+      {t: "Plug it into your personal laptop instead", ok: false, why: "That only moves the risk to your own device and accounts."},
+      {t: "Hand it to the IT or security team without plugging it in", ok: true, why: "IT can inspect it safely in an isolated environment."},
+      {t: "Throw it in the bin", ok: false, why: "Safer than plugging it in, but reporting it helps the team spot a targeted attack."}
+    ]
+  },
+  {
+    title: "The helpful IT caller", type: "Phone call",
+    evidence: `<div class="body" style="margin-top:0;border:0;padding:0">A caller says: "Hello, this is IT support. We detected a virus on your computer. To fix it, I need the 6-digit code that was just sent to your phone."</div>`,
+    hint: "Who is the code really meant for?",
+    options: [
+      {t: "Read the code out, since they are from IT", ok: false, why: "OTP codes prove you are you. Real support never asks for them."},
+      {t: "Give them only the first three digits", ok: false, why: "Partial codes still help an attacker."},
+      {t: "Hang up, then contact IT using the official number and report the attempt", ok: true, why: "Calling back through a trusted channel confirms whether the request was real."},
+      {t: "Ask for their name and then share the code", ok: false, why: "A name is easy to invent and proves nothing."}
+    ]
+  },
+  {
+    title: "The surprise invoice", type: "Email attachment",
+    evidence: `<div class="row"><b>From:</b><span>accounts@unknown-supplier.biz</span></div>
+      <div class="row"><b>Subject:</b><span>Invoice #88231 overdue</span></div>
+      <div class="row"><b>Attached:</b><span class="fake">Invoice_88231.pdf.exe</span></div>
+      <div class="body">Please see the attached invoice and pay immediately to avoid penalties.</div>`,
+    hint: "Look closely at the file name's ending.",
+    options: [
+      {t: "Open the attachment to see what it is", ok: false, why: "A .exe file is a program, not a PDF. Opening it can run malware."},
+      {t: "Do not open it, and report the email to your security team", ok: true, why: "A double extension and an unknown sender are strong warning signs."},
+      {t: "Save it to your desktop to open later", ok: false, why: "Saving does not make it safe and risks opening it by mistake."},
+      {t: "Scan it and open it if the scan is clean", ok: false, why: "Scans can miss new threats. You also do not know this supplier."}
+    ]
+  }
+];
+
+const $ = id => document.getElementById(id);
+const PTS = 20, LIMIT = 30;
+let i, score, correct, hints, answered, hintUsed, picked, tLeft, tInt, totalSecs = 0;
+const fmt = n => Math.floor(n / 60) + ":" + String(n % 60).padStart(2, "0");
+function renderTimer(){
+  const t = $("timer"); t.textContent = "⏱ " + tLeft + "s";
+  t.classList.toggle("low", tLeft <= 10);
+  $("tfill").style.width = (tLeft / LIMIT * 100) + "%";
+}
+function updateTotal(){ $("pTime").textContent = fmt(totalSecs); }
+function stopTimer(){ clearInterval(tInt); }
+function startTimer(){
+  stopTimer(); tLeft = LIMIT; renderTimer();
+  tInt = setInterval(() => {
+    tLeft--; totalSecs++; renderTimer(); updateTotal();
+    if (tLeft <= 0) submit(true);
+  }, 1000);
+}
+
+function show(id){["intro","game","end"].forEach(s => $(s).classList.toggle("hidden", s !== id));}
+function updateSide(done){
+  $("pCases").textContent = done + " / " + CASES.length;
+  $("pScore").textContent = score + " pts";
+  const bar = $("bar"); bar.setAttribute("aria-valuenow", done);
+  bar.firstElementChild.style.width = (done / CASES.length * 100) + "%";
+}
+function start(){
+  i = 0; score = 0; correct = 0; hints = 0; totalSecs = 0;
+  updateSide(0); updateTotal(); show("game"); loadCase();
+}
+function loadCase(){
+  const c = CASES[i];
+  answered = false; hintUsed = false; picked = null;
+  $("caseNo").textContent = "Case " + (i + 1) + " of " + CASES.length;
+  $("caseType").textContent = c.type;
+  $("caseTitle").textContent = c.title;
+  $("evidence").innerHTML = c.evidence;
+  const box = $("opts"); box.innerHTML = "";
+  c.options.forEach((o, n) => {
+    const l = document.createElement("label"); l.className = "opt";
+    const r = document.createElement("input"); r.type = "radio"; r.name = "choice"; r.value = n;
+    r.addEventListener("change", () => select(n));
+    const s = document.createElement("span"); s.textContent = o.t;
+    l.append(r, s); box.append(l);
+  });
+  ["hintBox","feedback","next"].forEach(x => $(x).classList.add("hidden"));
+  $("submit").classList.remove("hidden"); $("submit").disabled = true;
+  $("hintBtn").classList.remove("hidden"); $("hintBtn").disabled = false;
+  startTimer();
+}
+function select(n){
+  if (answered) return;
+  picked = n; $("submit").disabled = false;
+  [...document.querySelectorAll(".opt")].forEach((el, k) => el.classList.toggle("chosen", k === n));
+}
+function hint(){
+  if (answered || hintUsed) return;
+  hintUsed = true; hints++;
+  const b = $("hintBox"); b.textContent = "Hint: " + CASES[i].hint; b.classList.remove("hidden");
+  $("hintBtn").disabled = true;
+}
+function submit(timedOut){
+  if (answered || (picked === null && !timedOut)) return;
+  answered = true; stopTimer();
+  const c = CASES[i], opt = picked === null ? null : c.options[picked], ok = !!(opt && opt.ok);
+  const els = [...document.querySelectorAll(".opt")];
+  els.forEach((el, k) => {
+    el.classList.add("locked"); el.querySelector("input").disabled = true;
+    el.classList.remove("chosen");
+    if (c.options[k].ok) el.classList.add("right");
+    else if (k === picked) el.classList.add("wrong");
+  });
+  let gained = 0;
+  if (ok){ gained = hintUsed ? PTS / 2 : PTS; score += gained; correct++; }
+  updateSide(i + 1);
+  const f = $("feedback");
+  f.className = "feedback " + (ok ? "ok" : "no");
+  const good = c.options.find(o => o.ok);
+  f.innerHTML = "";
+  const st = document.createElement("strong");
+  st.textContent = ok ? "Correct! +" + gained + " pts" : (opt ? "Not quite. +0 pts" : "Time is up! +0 pts");
+  const p = document.createElement("span");
+  p.textContent = ok ? opt.why : (opt ? opt.why + " " : "") + "The safest response: " + good.why;
+  f.append(st, p);
+  $("submit").classList.add("hidden"); $("hintBtn").classList.add("hidden");
+  const nx = $("next"); nx.textContent = i === CASES.length - 1 ? "See results" : "Next case";
+  nx.classList.remove("hidden"); nx.focus();
+}
+function next(){
+  if (i === CASES.length - 1){ finish(); return; }
+  i++; loadCase();
+  $("caseTitle").scrollIntoView({block: "start", behavior: "smooth"});
+}
+function finish(){
+  $("finalScore").textContent = score + " / " + CASES.length * PTS;
+  $("finalCases").textContent = correct + " / " + CASES.length;
+  $("finalHints").textContent = hints;
+  $("finalTime").textContent = fmt(totalSecs);
+  const pct = score / (CASES.length * PTS);
+  $("rank").textContent = pct >= .9 ? "Master Detective" : pct >= .6 ? "Sharp Investigator" : "Rookie. Review the checklist and try again.";
+  show("end");
+}
+$("start").onclick = start;
+$("again").onclick = start;
+$("hintBtn").onclick = hint;
+$("submit").onclick = () => submit(false);
+$("next").onclick = next;
+</script>
+</body>
+</html>
